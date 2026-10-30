@@ -45,7 +45,7 @@ export class ApplicationRuntime {
       throw new Error(`${last}. ${this.output}`);
     }catch(error){await this.stop();throw error;}
   }
-  async prepareRemoval():Promise<ApplicationModuleStatus>{this.draining=true;try{const status=await this.call(this.manifest.application.prepareRemoval,true);if(status.busy)this.draining=false;return status;}catch(error){this.draining=false;throw error;}}
+  async prepareRemoval():Promise<ApplicationModuleStatus>{this.draining=true;try{const status=await this.call(this.manifest.application.prepareRemoval,true);if(status.busy||status.publicationPending||status.historyPending)this.draining=false;return status;}catch(error){this.draining=false;throw error;}}
   forward(req:Request,res:Response){
     if(!this.isRunning()||this.draining||!this.manifest.application.routes.some(prefix=>req.path===prefix||req.path.startsWith(prefix+'/')))return false;
     const headers={...req.headers,'x-swissmouse-module-token':this.token};

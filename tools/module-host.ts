@@ -227,6 +227,7 @@ export class ModuleHost {
   async prepareChange(id:string,action:string){
     const application=this.applications.get(id);if(!application||action==='enable')return;
     const status=await application.prepareRemoval();if(status.busy)throw new Error(status.busy);
+    if(status.publicationPending||status.historyPending)throw new Error('Wait for retained information and selection history to finish saving before changing this module.');
     await application.stop();this.applications.delete(id);this.active.delete(id);
   }
   forward(req:Request,res:Response){

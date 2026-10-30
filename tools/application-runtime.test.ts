@@ -43,3 +43,12 @@ test('failed full-module startup leaves Core and opaque saved data available',{t
   let host=await createCoreHost({appRoot:f.root});host.modules.install(packageData.bytes);await host.close();host=await createCoreHost({appRoot:f.root});t.after(async()=>{await host.close();f.cleanup();});await host.moduleActivation;
   const module=host.modules.list().modules[0];assert.equal(module.active,false);assert.match(module.error||'',/Synthetic startup failure|exited|stopped/);assert.equal(fs.readFileSync(path.join(f.root,'jobs.json'),'utf8'),'opaque module data');
 });
+
+test('pending publications block removal without leaving the module drained',{timeout:15000},async t=>{
+  const script="const http=require('node:http');http.createServer((req,res)=>{res.setHeader('Content-Type','application/json');res.end(JSON.stringify(req.url==='/api/example/prepare'?{publicationPending:true,historyPending:true}:{}));}).listen(Number(process.env.PORT),'127.0.0.1');";
+  const f=createTestFixture('.cache/application-pending-'),data=candidate(script);fs.writeFileSync(path.join(f.root,'module-trust.json'),JSON.stringify(data.trust));
+  let host=await createCoreHost({appRoot:f.root});host.modules.install(data.bytes);await host.close();host=await createCoreHost({appRoot:f.root});
+  const server=host.app.listen(0,'127.0.0.1');await once(server,'listening');t.after(async()=>{server.closeAllConnections();await new Promise<void>(done=>server.close(()=>done()));await host.close();f.cleanup();});await host.moduleActivation;
+  await assert.rejects(host.modules.prepareChange('example','disable'),/finish saving/);assert.equal(host.modules.list().modules[0].active,true);
+  assert.equal((await fetch('http://127.0.0.1:'+(server.address() as {port:number}).port+'/api/example/echo')).status,200);
+});

@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "dev": "tsx core-server.ts",
-    "build": "vite build --config vite.core.config.ts && esbuild core-server.ts --bundle --platform=node --format=cjs --packages=external --outfile=dist/core-server.cjs",
+    "build": "vite build --config vite.core.config.ts && esbuild core-server.ts --bundle --platform=node --format=cjs --packages=external --outfile=dist/core-server.cjs && esbuild tools/core-host.ts --bundle --platform=node --format=cjs --packages=external --outfile=dist/core-host.cjs",
     "start": "node dist/core-server.cjs",
     "lint": "tsc --noEmit",
     "test": "node --import tsx --test tools/application-runtime.test.ts"
