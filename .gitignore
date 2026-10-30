@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.cache/
+.installed-modules/
+runtime/
+models/
+inbox/
+output/
+config.json
+jobs.json*
+*.sqlite*
+ui-preferences.json
+core-preferences.json
+module-trust.json
+*.smmodule
